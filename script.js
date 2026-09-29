@@ -25,11 +25,34 @@ const questions = [
 const displayQuestionEl = document.getElementById("display-question");
 
 let currentQuestionIndex = 0;
+let currentAnswerButtons = [];
 
 const nextButtonEl = document.getElementById("next-button");
+const solutionButtonEl = document.getElementById("solution-button");
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+
+    const temp = array[i];
+    array[i] = array[randomIndex];
+    array[randomIndex] = temp;
+  }
+}
+
+function checkAnswer(selectedAnswer, selectedButtonEl) {
+  if (selectedAnswer.correct) {
+    selectedButtonEl.classList.add("correct");
+    alert("Richtig");
+  } else {
+    selectedButtonEl.classList.add("incorrect");
+    alert("Falsch");
+  }
+}
 
 function renderQuestion(currentQuestion) {
-  displayQuestionEl.innerHTML = ""; /* NEU: alte Frage entfernen */
+  const questionEl = document.createElement("div");
+  questionEl.id = currentQuestion.id;
 
   const questionTitleEl = document.createElement("h1");
   questionTitleEl.classList.add("question");
@@ -38,20 +61,35 @@ function renderQuestion(currentQuestion) {
   const answersEl = document.createElement("div");
   answersEl.classList.add("answers");
 
+  currentAnswerButtons = [];
+
+  shuffleArray(currentQuestion.answers);
+
   currentQuestion.answers.forEach((answer) => {
     const answerButtonEl = document.createElement("button");
     answerButtonEl.classList.add("answer");
     answerButtonEl.textContent = answer.text;
+
+    answerButtonEl.addEventListener("click", () => {
+      checkAnswer(answer, answerButtonEl);
+    });
+
     answersEl.appendChild(answerButtonEl);
+    currentAnswerButtons.push(answerButtonEl);
   });
 
-  displayQuestionEl.appendChild(questionTitleEl);
-  displayQuestionEl.appendChild(answersEl);
+  questionEl.appendChild(questionTitleEl);
+  questionEl.appendChild(answersEl);
+
+  displayQuestionEl.appendChild(questionEl);
 }
 
 renderQuestion(questions[currentQuestionIndex]);
 
 function showNextQuestion() {
+  const shownQuestion = questions[currentQuestionIndex];
+  document.getElementById(String(shownQuestion.id)).remove();
+
   currentQuestionIndex = currentQuestionIndex + 1;
 
   if (currentQuestionIndex === questions.length) {
@@ -63,4 +101,18 @@ function showNextQuestion() {
 
 nextButtonEl.addEventListener("click", () => {
   showNextQuestion();
+});
+
+function showSolution() {
+  const currentQuestion = questions[currentQuestionIndex];
+
+  currentQuestion.answers.forEach((answer, index) => {
+    if (answer.correct) {
+      checkAnswer(answer, currentAnswerButtons[index]);
+    }
+  });
+}
+
+solutionButtonEl.addEventListener("click", () => {
+  showSolution();
 });
